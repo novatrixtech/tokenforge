@@ -1,6 +1,5 @@
 /*
 SPDX-License-Identifier: no-license
-(c) Developed by Beatriz Siqueira
 */
 pragma solidity ^0.8.11;
 

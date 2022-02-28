@@ -1,6 +1,5 @@
 /*
 SPDX-License-Identifier: no-license
-(c) Developed by Beatriz Siqueira
 */
 pragma solidity ^0.8.11;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -150,29 +149,30 @@ contract Token1155 is ERC1155{
 }
 
 
-contract Token20 is ERC20, ERC20Burnable,ERC20Pausable, ERC20Permit { 
+contract TokenERC20 is ERC20, ERC20Burnable,ERC20Pausable, ERC20Permit { 
     address payable public owner; 
     uint8 public decimal;
-    address public thiscontract;
+    address public thisContract;
 
 
     modifier onlyOwner {
         require(msg.sender == owner,"Only owner can call this function.");
-    _;
-  }
+        _;
+    }
+
     constructor ( string memory _name, string memory _symbol, uint8 _decimal) ERC20(_name, _symbol) ERC20Permit(_name){
         owner = payable(msg.sender);
         decimal = _decimal;
-        thiscontract = address(this);
-
+        thisContract = address(this);
     }
-//override decimal
+
+    //override decimal
     function decimals() public view override returns (uint8) {
         return decimal;
     }
 
     function addr() public view virtual returns(address){
-        return thiscontract;
+        return thisContract;
     }
 
     function pause() public onlyOwner {
@@ -184,15 +184,15 @@ contract Token20 is ERC20, ERC20Burnable,ERC20Pausable, ERC20Permit {
     }
 
 
-  function changeOwner(address _newOwner) public onlyOwner returns (bool){
-      require(_newOwner != address(0), "You must inform a valid address");
-      owner = payable(_newOwner);
-      return true;
-  }
+    function changeOwner(address _newOwner) public onlyOwner returns (bool){
+        require(_newOwner != address(0), "You must inform a valid address");
+        owner = payable(_newOwner);
+        return true;
+    }
 
-  function mintToAdress(address mint, uint supply) public onlyOwner{
-      _mint(mint,supply);
-  }
+    function mintToAdress(address mint, uint supply) public onlyOwner{
+        _mint(mint,supply);
+    }
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal onlyOwner override(ERC20, ERC20Pausable) {
         ERC20Pausable._beforeTokenTransfer(from, to, amount);
@@ -204,9 +204,9 @@ contract Token20 is ERC20, ERC20Burnable,ERC20Pausable, ERC20Permit {
 contract Tokenforge {
     event GrantOperator(address indexed account);
     event RevokeOperator(address indexed account);
-    event ERC20event(string _name, string _symbol, uint8 _decimal,address indexed _addr);
-    event ERC721event(string _name, string symbol, address indexed _addr);
-    event ERC1155event(address indexed _addr);
+    event NewERC20(string _name, string _symbol, uint8 _decimal,address indexed _addr);
+    event NewERC721(string _name, string symbol, address indexed _addr);
+    event NewERC1155(address indexed _addr);
     enum TokenType{
         ERC20,
         ERC721,
@@ -236,17 +236,18 @@ contract Tokenforge {
     modifier onlyOwner {
         require(msg.sender == owner,"Only owner can call this function.");
         _;
-  }
-    constructor(){
+    }
+
+    constructor()   {
         owner = msg.sender;
         grantOperator(msg.sender);
     }
 
     function changeOwner(address _newOwner) public onlyOwner returns (bool){
-      require(_newOwner != address(0), "You must inform a valid address");
-      owner = payable(_newOwner);
-      return true;
-  }
+        require(_newOwner != address(0), "You must inform a valid address");
+        owner = payable(_newOwner);
+        return true;
+    }
 
     function grantOperator(address _account) public onlyOwner{
         operators[_account] = true;
@@ -258,10 +259,10 @@ contract Tokenforge {
         emit RevokeOperator(_account);
     }
 
-    function createERC20(string memory _name, string memory _symbol, uint8 _decimal) external onlyOperator{
-        Token20 token20 = new Token20(_name,_symbol,_decimal);
+    function forgeNewTokenERC20 (string memory _name, string memory _symbol, uint8 _decimal) external onlyOperator {
+        TokenERC20 token20 = new TokenERC20(_name,_symbol,_decimal);
         address _addr = token20.addr();
         datas.push(DataToken({name: _name,symbol:_symbol, token: TokenType.ERC20, addrcontract: _addr}));
-        emit ERC20event(_name, _symbol,_decimal, _addr);
+        emit NewERC20(_name, _symbol,_decimal, _addr);
     }
 }
